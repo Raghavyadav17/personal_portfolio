@@ -1,109 +1,53 @@
-// Particles.js Configuration
-particlesJS('particles-js', {
-    particles: {
-        number: {
-            value: 80,
-            density: {
+// Particles.js Configuration (theme-aware)
+function destroyParticlesIfAny() {
+    if (window.pJSDom && window.pJSDom.length) {
+        try {
+            window.pJSDom[0].pJS.fn.vendors.destroypJS();
+            window.pJSDom = [];
+        } catch (e) {}
+    }
+}
+
+function initParticles(particleColor) {
+    destroyParticlesIfAny();
+    particlesJS('particles-js', {
+        particles: {
+            number: {
+                value: 70,
+                density: { enable: true, value_area: 900 }
+            },
+            color: { value: particleColor },
+            shape: { type: 'circle', stroke: { width: 0, color: '#000000' } },
+            opacity: { value: 0.6 },
+            size: { value: 2.5, random: true },
+            line_linked: {
                 enable: true,
-                value_area: 800
-            }
-        },
-        color: {
-            value: '#667eea'
-        },
-        shape: {
-            type: 'circle',
-            stroke: {
-                width: 0,
-                color: '#000000'
+                distance: 140,
+                color: particleColor,
+                opacity: 0.3,
+                width: 1
             },
-            polygon: {
-                nb_sides: 5
-            }
-        },
-        opacity: {
-            value: 0.5,
-            random: false,
-            anim: {
-                enable: false,
-                speed: 1,
-                opacity_min: 0.1,
-                sync: false
-            }
-        },
-        size: {
-            value: 3,
-            random: true,
-            anim: {
-                enable: false,
-                speed: 40,
-                size_min: 0.1,
-                sync: false
-            }
-        },
-        line_linked: {
-            enable: true,
-            distance: 150,
-            color: '#667eea',
-            opacity: 0.4,
-            width: 1
-        },
-        move: {
-            enable: true,
-            speed: 6,
-            direction: 'none',
-            random: false,
-            straight: false,
-            out_mode: 'out',
-            bounce: false,
-            attract: {
-                enable: false,
-                rotateX: 600,
-                rotateY: 1200
-            }
-        }
-    },
-    interactivity: {
-        detect_on: 'canvas',
-        events: {
-            onhover: {
+            move: {
                 enable: true,
-                mode: 'repulse'
-            },
-            onclick: {
-                enable: true,
-                mode: 'push'
-            },
-            resize: true
-        },
-        modes: {
-            grab: {
-                distance: 400,
-                line_linked: {
-                    opacity: 1
-                }
-            },
-            bubble: {
-                distance: 400,
-                size: 40,
-                duration: 2,
-                opacity: 8,
-                speed: 3
-            },
-            repulse: {
-                distance: 200,
-                duration: 0.4
-            },
-            push: {
-                particles_nb: 4
-            },
-            remove: {
-                particles_nb: 2
+                speed: 3,
+                out_mode: 'out'
             }
-        }
-    },
-    retina_detect: true
-});
+        },
+        interactivity: {
+            detect_on: 'canvas',
+            events: {
+                onhover: { enable: true, mode: 'repulse' },
+                onclick: { enable: true, mode: 'push' },
+                resize: true
+            },
+            modes: {
+                repulse: { distance: 150, duration: 0.3 },
+                push: { particles_nb: 3 }
+            }
+        },
+        retina_detect: true
+    });
+}
 
 // Mobile Navigation Toggle
 const hamburger = document.querySelector('.hamburger');
@@ -161,6 +105,34 @@ window.addEventListener('scroll', () => {
     }
 });
 
+// Theme toggle
+const themeToggleBtn = document.querySelector('.theme-toggle');
+const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+const savedTheme = localStorage.getItem('theme');
+
+function applyTheme(theme) {
+    if (theme === 'light') {
+        document.body.classList.add('light');
+        themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+        initParticles('#9aa0a6');
+    } else {
+        document.body.classList.remove('light');
+        themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+        initParticles('#9aa0a6');
+    }
+}
+
+const initialTheme = savedTheme || (prefersLight ? 'light' : 'dark');
+applyTheme(initialTheme);
+
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+        const newTheme = document.body.classList.contains('light') ? 'dark' : 'light';
+        localStorage.setItem('theme', newTheme);
+        applyTheme(newTheme);
+    });
+}
+
 // Active navigation link highlighting
 window.addEventListener('scroll', () => {
     const sections = document.querySelectorAll('section[id]');
@@ -183,30 +155,10 @@ window.addEventListener('scroll', () => {
     });
 });
 
-// Typing animation for hero title
-function typeWriter(element, text, speed = 100) {
-    let i = 0;
-    element.innerHTML = '';
-
-    function type() {
-        if (i < text.length) {
-            element.innerHTML += text.charAt(i);
-            i++;
-            setTimeout(type, speed);
-        }
-    }
-    type();
-}
-
-// Initialize typing animation when page loads
+// Remove language animation and set static greeting
 window.addEventListener('load', () => {
-    const heroTitle = document.querySelector('.hero-title .name');
-    if (heroTitle) {
-        const originalText = heroTitle.textContent;
-        setTimeout(() => {
-            typeWriter(heroTitle, originalText, 150);
-        }, 1000);
-    }
+    const gradientText = document.querySelector('.hero-title .gradient-text');
+    if (gradientText) gradientText.textContent = "Hello, I'm";
 });
 
 // Intersection Observer for animations
@@ -314,9 +266,7 @@ style.textContent = `
         }
     }
 
-    .nav-link.active {
-        color: #667eea !important;
-    }
+    .nav-link.active { color: var(--accent) !important; }
 
     .nav-link.active::after {
         width: 100% !important;
